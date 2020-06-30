@@ -1,4 +1,4 @@
-import com.sun.org.apache.xerces.internal.impl.dv.util.Base64;
+import java.util.Base64;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -9,9 +9,11 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URL;
+import java.util.ArrayList;
 
 public class AudioCutter {
     private String accessToken;
+    private ArrayList<Song> songList = new ArrayList<Song>();
 
     public AudioCutter() {
         this.accessToken = "";
@@ -25,7 +27,7 @@ public class AudioCutter {
         this.accessToken = accessToken;
     }
 
-    public void getPlaylistData(String accessToken, String playlistId) throws Exception {
+    public ArrayList<Song> getPlaylistData(String accessToken, String playlistId) throws Exception {
         URL urlForGetRequest = new URL("https://api.spotify.com/v1/playlists/" + playlistId + "/tracks");
         String readLine = null;
         HttpURLConnection conection = (HttpURLConnection) urlForGetRequest.openConnection();
@@ -57,11 +59,14 @@ public class AudioCutter {
                 System.out.println("Duration (sec): " + (songDuration / 1000));
                 System.out.println("Duration (min:sec): " + ((songDuration / 1000) / 60) + ":" + ((songDuration / 1000) % 60));
                 System.out.println("-----------------------------------");
+                Song currentSong = new Song(songName, artistName, songDuration);
+                songList.add(currentSong);
             }
         } else {
             System.out.println("GET REQUEST DID NOT WORK!");
             System.out.println(responseCode);
         }
+       return songList;
     }
 
     public void authorizeApp(String clientId) throws Exception {
@@ -82,7 +87,8 @@ public class AudioCutter {
         HttpURLConnection conection = (HttpURLConnection) urlForGetRequest.openConnection();
         conection.setRequestMethod("POST");
         String authData = clientId + ":" + clientSecret;
-        String authDataEncoded = Base64.encode(authData.getBytes());
+       // String authDataEncoded = Base64.encode(authData.getBytes());
+        String authDataEncoded = new String (Base64.getEncoder().encode(authData.getBytes()));
         String postDataParameters = "grant_type=authorization_code&code=" + clientCode + "&redirect_uri=http://localhost:8888/callback";
         byte[] postData = postDataParameters.getBytes();
         conection.setRequestProperty("Authorization", "Basic " + authDataEncoded);

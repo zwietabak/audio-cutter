@@ -1,3 +1,4 @@
 .idea/
 .attach*
 target/
+src/main/resources
